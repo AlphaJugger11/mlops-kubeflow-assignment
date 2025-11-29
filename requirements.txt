@@ -1,0 +1,8 @@
+dvc
+mlflow
+torch
+torchvision
+pandas
+numpy
+joblib
+matplotlib
