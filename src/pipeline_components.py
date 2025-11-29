@@ -48,48 +48,54 @@ def preprocess_data(input_path: str, train_path: str, test_path: str, test_size:
 # ----------------------------
 def train_model(train_path: str, model_path: str):
     import pandas as pd
-    from sklearn.ensemble import RandomForestRegressor  # it's a regression problem
+    from sklearn.ensemble import RandomForestRegressor
     import joblib
+    import mlflow.sklearn  # <-- add this if not already
 
     train_df = pd.read_csv(train_path)
-
-    # Label column
     label_column = 'MedHouseVal'
-
     X = train_df.drop(label_column, axis=1)
     y = train_df[label_column]
 
-    # Using RandomForestRegressor because MedHouseVal is continuous
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X, y)
 
     joblib.dump(model, model_path)
     print(f"Model saved to {model_path}")
 
+    mlflow.sklearn.log_model(model, "random_forest_model")  # <-- log the model
+
 # ----------------------------
 # 4. Model Evaluation Component
 # ----------------------------
-def evaluate_model(test_path: str, model_path: str, metrics_path: str):
-    import pandas as pd
-    import joblib
-    from sklearn.metrics import mean_squared_error, r2_score
+# ----------------------------
+# 4. Model Evaluation Component
+# ----------------------------
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+def evaluate_model(model_path: str, test_path: str, metrics_path: str):
+    # Load test data and model
     test_df = pd.read_csv(test_path)
-    label_column = 'MedHouseVal'
-
-    X_test = test_df.drop(label_column, axis=1)
-    y_test = test_df[label_column]
+    X_test = test_df.drop('MedHouseVal', axis=1)
+    y_test = test_df['MedHouseVal']
 
     model = joblib.load(model_path)
+
+    # Make predictions
     preds = model.predict(X_test)
 
-    metrics = {
-        'MSE': mean_squared_error(y_test, preds),
-        'R2': r2_score(y_test, preds)
-    }
+    # Compute regression metrics
+    mse = mean_squared_error(y_test, preds)
+    mae = mean_absolute_error(y_test, preds)
+    r2 = r2_score(y_test, preds)
 
-    import json
-    with open(metrics_path, 'w') as f:
-        json.dump(metrics, f)
+    # Save metrics to CSV
+    metrics = {'mse': mse, 'mae': mae, 'r2': r2}
+    pd.DataFrame([metrics]).to_csv(metrics_path, index=False)
 
-    print(f"Metrics saved to {metrics_path}")
+    # Log metrics to MLflow
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("mae", mae)
+    mlflow.log_metric("r2", r2)
+
+    print("Metrics logged to MLflow:", metrics)
