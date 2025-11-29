@@ -214,7 +214,7 @@ __marimo__/
 #Markdowns
 
 *.md
-.dvc/
+# .dvc/
 data/
 
 /data
