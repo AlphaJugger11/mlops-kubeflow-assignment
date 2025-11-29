@@ -218,3 +218,40 @@ __marimo__/
 data/
 
 /data
+
+# MLflow tracking folder
+mlruns/
+
+# DVC cache
+.dvc/cache/
+
+# Optional: DVC tmp files
+.dvc/tmp/
+
+# Large files managed by DVC
+data/
+models/
+metrics/
+
+# MLflow
+mlruns/
+
+# DVC cache & temp
+.dvc/cache/
+.dvc/tmp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# VSCode
+.vscode/
+
+# Large files (managed by DVC)
+data/
+models/
+metrics/
